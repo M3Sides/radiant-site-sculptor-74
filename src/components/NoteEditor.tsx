@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Plus, File, Trash2 } from "lucide-react";
+import { Plus, File, Trash2, Bold, Italic, List } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
 import { Input } from "./ui/input";
@@ -33,19 +33,27 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   } = useNotesStore();
 
   const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const selectedNote = notes.find(note => note.id === selectedNoteId);
 
   useEffect(() => {
     initializeNotes();
   }, [initializeNotes]);
 
-  const handleTitleClick = (noteId: number) => {
+  const handleTitleClick = (noteId: number, currentTitle: string) => {
     setEditingTitleId(noteId);
+    setEditingTitle(currentTitle);
   };
 
-  const handleTitleChange = (noteId: number, newTitle: string) => {
-    updateNoteTitle(noteId, newTitle);
+  const handleTitleChange = (noteId: number) => {
+    if (editingTitle.trim() !== "") {
+      updateNoteTitle(noteId, editingTitle);
+    }
     setEditingTitleId(null);
+  };
+
+  const formatText = (command: string) => {
+    document.execCommand(command, false);
   };
 
   return (
@@ -67,7 +75,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                 <SidebarMenu>
                   {notes.map((note) => (
                     <SidebarMenuItem key={note.id}>
-                      <div className="flex items-center w-full group">
+                      <div className="flex items-center w-full group/item">
                         <SidebarMenuButton
                           onClick={() => setSelectedNote(note.id)}
                           className={selectedNoteId === note.id ? "bg-accent flex-1" : "flex-1"}
@@ -75,12 +83,12 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                           <File className="h-4 w-4" />
                           {editingTitleId === note.id ? (
                             <Input
-                              value={note.title}
-                              onChange={(e) => handleTitleChange(note.id, e.target.value)}
-                              onBlur={() => setEditingTitleId(null)}
+                              value={editingTitle}
+                              onChange={(e) => setEditingTitle(e.target.value)}
+                              onBlur={() => handleTitleChange(note.id)}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                  handleTitleChange(note.id, e.currentTarget.value);
+                                  handleTitleChange(note.id);
                                 }
                               }}
                               autoFocus
@@ -90,7 +98,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                             <span 
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleTitleClick(note.id);
+                                handleTitleClick(note.id, note.title);
                               }}
                               className="cursor-text"
                             >
@@ -101,7 +109,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
+                          className="h-8 w-8 opacity-0 group-hover/item:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
                           onClick={() => deleteNote(note.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -118,12 +126,23 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
         <div className="flex-1 flex flex-col h-full">
           <div className="border-b border-border p-4">
             <h1 className="text-xl font-semibold">{selectedNote?.title}</h1>
+            <div className="flex gap-2 mt-2">
+              <Button variant="outline" size="icon" onClick={() => formatText('bold')}>
+                <Bold className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => formatText('italic')}>
+                <Italic className="h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="icon" onClick={() => formatText('insertUnorderedList')}>
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <textarea
-            className="flex-1 w-full h-full p-4 resize-none focus:outline-none"
-            value={selectedNote?.content || ""}
-            onChange={(e) => updateNoteContent(e.target.value)}
-            placeholder="Start writing..."
+          <div
+            className="flex-1 w-full h-full p-4 focus:outline-none"
+            contentEditable
+            onInput={(e) => updateNoteContent(e.currentTarget.innerHTML)}
+            dangerouslySetInnerHTML={{ __html: selectedNote?.content || "" }}
           />
         </div>
       </div>
