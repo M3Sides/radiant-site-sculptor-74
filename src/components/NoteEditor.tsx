@@ -60,9 +60,11 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     }
   };
 
-  const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
-    const content = e.currentTarget.innerHTML;
-    updateNoteContent(content);
+  const handleContentChange = () => {
+    if (contentEditableRef.current) {
+      const content = contentEditableRef.current.innerHTML;
+      updateNoteContent(content);
+    }
   };
 
   return (
