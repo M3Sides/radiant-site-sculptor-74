@@ -40,11 +40,22 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        paragraph: {
+          HTMLAttributes: {
+            class: 'whitespace-pre-wrap',
+          },
+        },
+      }),
     ],
     content: selectedNote?.content || "",
     onUpdate: ({ editor }) => {
       updateNoteContent(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4',
+      },
     },
   });
 
@@ -172,7 +183,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
           </div>
           <EditorContent 
             editor={editor} 
-            className="flex-1 w-full h-full p-4 focus:outline-none prose prose-sm max-w-none"
+            className="flex-1 w-full h-full overflow-auto"
           />
         </div>
       </div>
