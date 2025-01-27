@@ -60,6 +60,11 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     }
   };
 
+  const handleContentChange = (e: React.FormEvent<HTMLDivElement>) => {
+    const content = e.currentTarget.innerHTML;
+    updateNoteContent(content);
+  };
+
   return (
     <SidebarProvider>
       <div className="flex w-full h-full bg-background">
@@ -161,7 +166,8 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
             ref={contentEditableRef}
             className="flex-1 w-full h-full p-4 focus:outline-none"
             contentEditable
-            onInput={(e) => updateNoteContent(e.currentTarget.innerHTML)}
+            suppressContentEditableWarning
+            onInput={handleContentChange}
             dangerouslySetInnerHTML={{ __html: selectedNote?.content || "" }}
           />
         </div>
