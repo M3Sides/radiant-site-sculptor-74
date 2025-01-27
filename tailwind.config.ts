@@ -29,8 +29,8 @@ export default {
           border: "#E6DFB8",
         },
         primary: {
-          DEFAULT: "#222222",
-          foreground: "#FFFFFF",
+          DEFAULT: "#f9ed4a",
+          foreground: "#222222",
         },
         secondary: {
           DEFAULT: "#8E9196",
