@@ -12,8 +12,9 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Plus, File, Trash2 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
+import { Input } from "./ui/input";
 
 interface NoteEditorProps {
   onClose: () => void;
@@ -27,14 +28,25 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     addNote, 
     setSelectedNote,
     updateNoteContent,
+    updateNoteTitle,
     deleteNote
   } = useNotesStore();
 
+  const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
   const selectedNote = notes.find(note => note.id === selectedNoteId);
 
   useEffect(() => {
     initializeNotes();
   }, [initializeNotes]);
+
+  const handleTitleClick = (noteId: number) => {
+    setEditingTitleId(noteId);
+  };
+
+  const handleTitleChange = (noteId: number, newTitle: string) => {
+    updateNoteTitle(noteId, newTitle);
+    setEditingTitleId(null);
+  };
 
   return (
     <SidebarProvider>
@@ -55,18 +67,41 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                 <SidebarMenu>
                   {notes.map((note) => (
                     <SidebarMenuItem key={note.id}>
-                      <div className="flex items-center w-full">
+                      <div className="flex items-center w-full group">
                         <SidebarMenuButton
                           onClick={() => setSelectedNote(note.id)}
                           className={selectedNoteId === note.id ? "bg-accent flex-1" : "flex-1"}
                         >
                           <File className="h-4 w-4" />
-                          <span>{note.title}</span>
+                          {editingTitleId === note.id ? (
+                            <Input
+                              value={note.title}
+                              onChange={(e) => handleTitleChange(note.id, e.target.value)}
+                              onBlur={() => setEditingTitleId(null)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleTitleChange(note.id, e.currentTarget.value);
+                                }
+                              }}
+                              autoFocus
+                              className="h-7 w-full"
+                            />
+                          ) : (
+                            <span 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleTitleClick(note.id);
+                              }}
+                              className="cursor-text"
+                            >
+                              {note.title}
+                            </span>
+                          )}
                         </SidebarMenuButton>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
                           onClick={() => deleteNote(note.id)}
                         >
                           <Trash2 className="h-4 w-4" />

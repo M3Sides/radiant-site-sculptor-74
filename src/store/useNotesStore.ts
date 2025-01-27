@@ -14,6 +14,7 @@ interface NotesStore {
   setSelectedNote: (id: number) => void;
   addNote: () => void;
   updateNoteContent: (content: string) => void;
+  updateNoteTitle: (id: number, title: string) => void;
   deleteNote: (id: number) => void;
   initializeNotes: () => void;
 }
@@ -65,6 +66,17 @@ export const useNotesStore = create<NotesStore>((set, get) => ({
     
     set({ notes: updatedNotes });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedNotes));
+  },
+
+  updateNoteTitle: (id, title) => {
+    const { notes } = get();
+    const updatedNotes = notes.map(note => 
+      note.id === id ? { ...note, title } : note
+    );
+    
+    set({ notes: updatedNotes });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedNotes));
+    toast.success("Note title updated!");
   },
   
   deleteNote: (id) => {
