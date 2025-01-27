@@ -18,7 +18,7 @@ const Hero = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="relative w-56 h-56 mb-8">
-        <div className={`absolute -top-8 right-0 z-10 transition-transform duration-300 ${isEditorOpen ? '-translate-y-8' : ''}`}>
+        <div className={`absolute -top-16 right-0 z-10 transition-transform duration-300 ${isEditorOpen ? '-translate-y-8' : ''}`}>
           <svg className="w-8 h-auto text-[#f9ed4a]" width="121" height="135" viewBox="0 0 121 135" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M5 16.4754C11.7688 27.4499 21.2452 57.3224 5 89.0164" stroke="currentColor" strokeWidth="10" strokeLinecap="round"></path>
             <path d="M33.6761 112.104C44.6984 98.1239 74.2618 57.6776 83.4821 5" stroke="currentColor" strokeWidth="10" strokeLinecap="round"></path>
