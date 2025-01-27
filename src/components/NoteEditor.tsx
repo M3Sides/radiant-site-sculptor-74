@@ -43,20 +43,25 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
       StarterKit.configure({
         paragraph: {
           HTMLAttributes: {
-            class: 'whitespace-pre-wrap',
+            style: 'white-space: pre-wrap;',
           },
         },
       }),
     ],
     content: selectedNote?.content || "",
     onUpdate: ({ editor }) => {
-      updateNoteContent(editor.getHTML());
+      if (selectedNoteId) {
+        updateNoteContent(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 overflow-y-auto',
+        spellcheck: 'false',
       },
     },
+    enableInputRules: false,
+    enablePasteRules: false,
   });
 
   useEffect(() => {
@@ -80,6 +85,8 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     }
     setEditingTitleId(null);
   };
+
+  // ... keep existing code (rest of the component JSX)
 
   return (
     <SidebarProvider>
