@@ -12,7 +12,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Plus, File, Trash2, Bold, Italic, List } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
 import { Input } from "./ui/input";
 
@@ -35,6 +35,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const selectedNote = notes.find(note => note.id === selectedNoteId);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     initializeNotes();
@@ -54,6 +55,9 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
 
   const formatText = (command: string) => {
     document.execCommand(command, false);
+    if (contentEditableRef.current) {
+      contentEditableRef.current.focus();
+    }
   };
 
   return (
@@ -75,7 +79,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                 <SidebarMenu>
                   {notes.map((note) => (
                     <SidebarMenuItem key={note.id}>
-                      <div className="flex items-center w-full group/item">
+                      <div className="flex items-center w-full group">
                         <SidebarMenuButton
                           onClick={() => setSelectedNote(note.id)}
                           className={selectedNoteId === note.id ? "bg-accent flex-1" : "flex-1"}
@@ -109,7 +113,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 opacity-0 group-hover/item:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
+                          className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-destructive hover:text-destructive-foreground transition-opacity"
                           onClick={() => deleteNote(note.id)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -125,20 +129,36 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
 
         <div className="flex-1 flex flex-col h-full">
           <div className="border-b border-border p-4">
-            <h1 className="text-xl font-semibold">{selectedNote?.title}</h1>
-            <div className="flex gap-2 mt-2">
-              <Button variant="outline" size="icon" onClick={() => formatText('bold')}>
-                <Bold className="h-4 w-4" />
+            <h1 className="text-xl font-semibold mb-2">{selectedNote?.title}</h1>
+            <div className="flex gap-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => formatText('bold')}
+                className="h-8 px-2 hover:bg-accent"
+              >
+                <Bold className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="icon" onClick={() => formatText('italic')}>
-                <Italic className="h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => formatText('italic')}
+                className="h-8 px-2 hover:bg-accent"
+              >
+                <Italic className="h-3.5 w-3.5" />
               </Button>
-              <Button variant="outline" size="icon" onClick={() => formatText('insertUnorderedList')}>
-                <List className="h-4 w-4" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => formatText('insertUnorderedList')}
+                className="h-8 px-2 hover:bg-accent"
+              >
+                <List className="h-3.5 w-3.5" />
               </Button>
             </div>
           </div>
           <div
+            ref={contentEditableRef}
             className="flex-1 w-full h-full p-4 focus:outline-none"
             contentEditable
             onInput={(e) => updateNoteContent(e.currentTarget.innerHTML)}
