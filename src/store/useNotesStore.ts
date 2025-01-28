@@ -24,37 +24,13 @@ const DEFAULT_NOTES: Note[] = [
   { 
     id: 1, 
     title: "Welcome Note", 
-    content: JSON.stringify({
-      blocks: [
-        {
-          text: "Start writing your first note!",
-          type: "unstyled",
-          depth: 0,
-          inlineStyleRanges: [],
-          entityRanges: [],
-          data: {}
-        }
-      ],
-      entityMap: {}
-    }), 
+    content: "Start writing your first note!", 
     createdAt: new Date().toISOString() 
   },
   { 
     id: 2, 
     title: "Quick Tips", 
-    content: JSON.stringify({
-      blocks: [
-        {
-          text: "Click the + button to create a new note.",
-          type: "unstyled",
-          depth: 0,
-          inlineStyleRanges: [],
-          entityRanges: [],
-          data: {}
-        }
-      ],
-      entityMap: {}
-    }), 
+    content: "Click the + button to create a new note.", 
     createdAt: new Date().toISOString() 
   },
 ];

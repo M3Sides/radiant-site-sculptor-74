@@ -11,43 +11,16 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Plus, File, Trash2, Bold, Italic, List, ListOrdered } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
+import { Plus, File, Trash2, Bold, Italic, List } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
 import { Input } from "./ui/input";
-import { 
-  Editor, 
-  EditorState, 
-  RichUtils, 
-  convertToRaw, 
-  convertFromRaw, 
-  convertFromHTML, 
-  ContentState 
-} from "draft-js";
-import "draft-js/dist/Draft.css";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 interface NoteEditorProps {
   onClose: () => void;
 }
-
-type ToolbarButtonProps = {
-  icon: React.ReactNode;
-  onToggle: () => void;
-  active: boolean;
-  label: string;
-}
-
-const ToolbarButton = ({ icon, onToggle, active, label }: ToolbarButtonProps) => (
-  <Button
-    variant="ghost"
-    size="icon"
-    onClick={onToggle}
-    className={`h-7 px-2 hover:bg-accent ${active ? "bg-accent" : ""}`}
-    aria-label={label}
-  >
-    {icon}
-  </Button>
-);
 
 export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   const { 
@@ -64,53 +37,42 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   const [editingTitleId, setEditingTitleId] = useState<number | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const selectedNote = notes.find(note => note.id === selectedNoteId);
-  
-  const [editorState, setEditorState] = useState(() => {
-    if (selectedNote?.content) {
-      try {
-        const contentState = convertFromRaw(JSON.parse(selectedNote.content));
-        return EditorState.createWithContent(contentState);
-      } catch (e) {
-        console.log('Error parsing content:', e);
-        return EditorState.createEmpty();
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        paragraph: {
+          HTMLAttributes: {
+            style: 'white-space: pre-wrap;',
+          },
+        },
+      }),
+    ],
+    content: selectedNote?.content || "",
+    onUpdate: ({ editor }) => {
+      if (selectedNoteId) {
+        updateNoteContent(editor.getHTML());
       }
-    }
-    return EditorState.createEmpty();
+    },
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 overflow-y-auto',
+        spellcheck: 'false',
+      },
+    },
+    enableInputRules: false,
+    enablePasteRules: false,
   });
-
-  const handleKeyCommand = useCallback((command: string, editorState: EditorState) => {
-    const newState = RichUtils.handleKeyCommand(editorState, command);
-    if (newState) {
-      setEditorState(newState);
-      return "handled";
-    }
-    return "not-handled";
-  }, []);
-
-  const toggleInlineStyle = useCallback((inlineStyle: string) => {
-    setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle));
-  }, [editorState]);
-
-  const toggleBlockType = useCallback((blockType: string) => {
-    setEditorState(RichUtils.toggleBlockType(editorState, blockType));
-  }, [editorState]);
 
   useEffect(() => {
     initializeNotes();
   }, [initializeNotes]);
 
   useEffect(() => {
-    if (selectedNote?.content) {
-      const blocksFromHTML = convertFromHTML(selectedNote.content);
-      const contentState = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      );
-      setEditorState(EditorState.createWithContent(contentState));
-    } else {
-      setEditorState(EditorState.createEmpty());
+    if (editor && selectedNote) {
+      editor.commands.setContent(selectedNote.content || "");
     }
-  }, [selectedNote]);
+  }, [selectedNote, editor]);
 
   const handleTitleClick = (noteId: number, currentTitle: string) => {
     setEditingTitleId(noteId);
@@ -124,18 +86,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     setEditingTitleId(null);
   };
 
-  const handleEditorChange = (newEditorState: EditorState) => {
-    setEditorState(newEditorState);
-    if (selectedNoteId) {
-      const contentState = newEditorState.getCurrentContent();
-      const rawContent = convertToRaw(contentState);
-      updateNoteContent(JSON.stringify(rawContent));
-    }
-  };
-
-  const currentStyle = editorState.getCurrentInlineStyle();
-  const selection = editorState.getSelection();
-  const blockType = editorState.getCurrentContent().getBlockForKey(selection.getStartKey()).getType();
+  // ... keep existing code (rest of the component JSX)
 
   return (
     <SidebarProvider>
@@ -208,41 +159,39 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
           <div className="border-b border-border p-2">
             <h1 className="text-xl font-semibold mb-2">{selectedNote?.title}</h1>
             <div className="flex gap-1">
-              <ToolbarButton
-                icon={<Bold className="h-3.5 w-3.5" />}
-                onToggle={() => toggleInlineStyle("BOLD")}
-                active={currentStyle.has("BOLD")}
-                label="Bold"
-              />
-              <ToolbarButton
-                icon={<Italic className="h-3.5 w-3.5" />}
-                onToggle={() => toggleInlineStyle("ITALIC")}
-                active={currentStyle.has("ITALIC")}
-                label="Italic"
-              />
-              <ToolbarButton
-                icon={<List className="h-3.5 w-3.5" />}
-                onToggle={() => toggleBlockType("unordered-list-item")}
-                active={blockType === "unordered-list-item"}
-                label="Bullet List"
-              />
-              <ToolbarButton
-                icon={<ListOrdered className="h-3.5 w-3.5" />}
-                onToggle={() => toggleBlockType("ordered-list-item")}
-                active={blockType === "ordered-list-item"}
-                label="Numbered List"
-              />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => editor?.chain().focus().toggleBold().run()}
+                className="h-7 px-2 hover:bg-accent"
+                data-active={editor?.isActive('bold')}
+              >
+                <Bold className="h-3.5 w-3.5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => editor?.chain().focus().toggleItalic().run()}
+                className="h-7 px-2 hover:bg-accent"
+                data-active={editor?.isActive('italic')}
+              >
+                <Italic className="h-3.5 w-3.5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                className="h-7 px-2 hover:bg-accent"
+                data-active={editor?.isActive('bulletList')}
+              >
+                <List className="h-3.5 w-3.5" />
+              </Button>
             </div>
           </div>
-          <div className="flex-1 w-full h-full overflow-auto p-4">
-            <Editor
-              editorState={editorState}
-              onChange={handleEditorChange}
-              handleKeyCommand={handleKeyCommand}
-              placeholder="Start typing..."
-              ariaLabel="Rich text editor"
-            />
-          </div>
+          <EditorContent 
+            editor={editor} 
+            className="flex-1 w-full h-full overflow-auto"
+          />
         </div>
       </div>
     </SidebarProvider>
