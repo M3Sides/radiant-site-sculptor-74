@@ -15,7 +15,15 @@ import { Plus, File, Trash2, Bold, Italic, List, ListOrdered } from "lucide-reac
 import { useEffect, useState, useCallback } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
 import { Input } from "./ui/input";
-import { Editor, EditorState, RichUtils, convertToRaw, convertFromHTML, ContentState } from "draft-js";
+import { 
+  Editor, 
+  EditorState, 
+  RichUtils, 
+  convertToRaw, 
+  convertFromRaw, 
+  convertFromHTML, 
+  ContentState 
+} from "draft-js";
 import "draft-js/dist/Draft.css";
 
 interface NoteEditorProps {
