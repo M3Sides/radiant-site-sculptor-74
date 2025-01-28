@@ -59,12 +59,13 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   
   const [editorState, setEditorState] = useState(() => {
     if (selectedNote?.content) {
-      const blocksFromHTML = convertFromHTML(selectedNote.content);
-      const contentState = ContentState.createFromBlockArray(
-        blocksFromHTML.contentBlocks,
-        blocksFromHTML.entityMap
-      );
-      return EditorState.createWithContent(contentState);
+      try {
+        const contentState = convertFromRaw(JSON.parse(selectedNote.content));
+        return EditorState.createWithContent(contentState);
+      } catch (e) {
+        console.log('Error parsing content:', e);
+        return EditorState.createEmpty();
+      }
     }
     return EditorState.createEmpty();
   });
@@ -120,8 +121,7 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     if (selectedNoteId) {
       const contentState = newEditorState.getCurrentContent();
       const rawContent = convertToRaw(contentState);
-      const htmlContent = `<div>${JSON.stringify(rawContent)}</div>`;
-      updateNoteContent(htmlContent);
+      updateNoteContent(JSON.stringify(rawContent));
     }
   };
 
