@@ -11,12 +11,11 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Plus, File, Trash2, Bold, Italic, List } from "lucide-react";
+import { Plus, File, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNotesStore } from "@/store/useNotesStore";
 import { Input } from "./ui/input";
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
+import CustomTextArea from "./CustomTextArea";
 
 interface NoteEditorProps {
   onClose: () => void;
@@ -38,41 +37,9 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
   const [editingTitle, setEditingTitle] = useState("");
   const selectedNote = notes.find(note => note.id === selectedNoteId);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        paragraph: {
-          HTMLAttributes: {
-            style: 'white-space: pre-wrap;',
-          },
-        },
-      }),
-    ],
-    content: selectedNote?.content || "",
-    onUpdate: ({ editor }) => {
-      if (selectedNoteId) {
-        updateNoteContent(editor.getHTML());
-      }
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4 overflow-y-auto',
-        spellcheck: 'false',
-      },
-    },
-    enableInputRules: false,
-    enablePasteRules: false,
-  });
-
   useEffect(() => {
     initializeNotes();
   }, [initializeNotes]);
-
-  useEffect(() => {
-    if (editor && selectedNote) {
-      editor.commands.setContent(selectedNote.content || "");
-    }
-  }, [selectedNote, editor]);
 
   const handleTitleClick = (noteId: number, currentTitle: string) => {
     setEditingTitleId(noteId);
@@ -85,8 +52,6 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
     }
     setEditingTitleId(null);
   };
-
-  // ... keep existing code (rest of the component JSX)
 
   return (
     <SidebarProvider>
@@ -158,40 +123,10 @@ export const NoteEditor = ({ onClose }: NoteEditorProps) => {
         <div className="flex-1 flex flex-col h-full">
           <div className="border-b border-border p-2">
             <h1 className="text-xl font-semibold mb-2">{selectedNote?.title}</h1>
-            <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => editor?.chain().focus().toggleBold().run()}
-                className="h-7 px-2 hover:bg-accent"
-                data-active={editor?.isActive('bold')}
-              >
-                <Bold className="h-3.5 w-3.5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => editor?.chain().focus().toggleItalic().run()}
-                className="h-7 px-2 hover:bg-accent"
-                data-active={editor?.isActive('italic')}
-              >
-                <Italic className="h-3.5 w-3.5" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => editor?.chain().focus().toggleBulletList().run()}
-                className="h-7 px-2 hover:bg-accent"
-                data-active={editor?.isActive('bulletList')}
-              >
-                <List className="h-3.5 w-3.5" />
-              </Button>
-            </div>
           </div>
-          <EditorContent 
-            editor={editor} 
-            className="flex-1 w-full h-full overflow-auto"
-          />
+          <div className="flex-1 p-4">
+            <CustomTextArea />
+          </div>
         </div>
       </div>
     </SidebarProvider>
